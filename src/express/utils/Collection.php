@@ -2,48 +2,79 @@
 
 namespace express\utils;
 
-use ArrayAccess;
-use Volatile;
+use ArrayIterator;
+use Closure;
+use JetBrains\PhpStorm\Pure;
+use function array_filter;
+use function array_keys;
+use function array_map;
 
-class Collection extends Volatile implements ArrayAccess {
+/**
+ * @template T
+ * @extends ArrayIterator<T>
+ */
+class Collection extends ArrayIterator {
 	
-	public function offsetExists($offset): bool {
-		return isset($this[$offset]);
+	public function has(mixed $key): bool {
+		return $this->offsetExists($key);
 	}
 	
-	public function has($offset): bool {
-		return $this->offsetExists($offset);
+	/**
+	 * @param mixed $key
+	 * @param mixed|null $default
+	 *
+	 * @return T
+	 */
+	public function get(mixed $key, mixed $default = null) {
+		if (!$this->has($key)) return $default;
+		return $this->offsetGet($key) ?? $default;
 	}
 	
-	public function get($offset): mixed {
-		return $this->offsetGet($offset);
-	}
-	
-	public function set($offset, $value): void {
-		$this->offsetSet($offset, $value);
-	}
-	
-	public function fill(array $array): void {
-		foreach ($array as $k => $v) {
-			$this->set($k, $v);
+	/**
+	 * @param mixed $key
+	 * @param mixed|null $default
+	 *
+	 * @return T
+	 */
+	public function getAndUnset(mixed $key, mixed $default = null) {
+		if ($this->has($key)) {
+			$r = $this->get($key);
+			$this->unset($key);
+			return $r;
 		}
+		return $default;
 	}
 	
-	public function offsetGet($offset): mixed {
-		return $this[$offset];
+	/**
+	 * @param mixed $key
+	 * @param T $value
+	 */
+	public function set(mixed $key, mixed $value): void {
+		$this->offsetSet($key, $value);
 	}
 	
-	public function offsetSet($offset, $value): void {
-		$this[$offset] = $value;
+	public function unset(mixed $key): bool {
+		if (!$this->has($key)) return false;
+		$this->offsetUnset($key);
+		return true;
 	}
 	
-	public function offsetUnset($offset): void {
-		unset($this[$offset]);
+	/**
+	 * @return array<T>
+	 */
+	public function asArray(): array {
+		return (array) $this;
 	}
 	
-	public static function fromArray(array $array): Collection {
-		$c = new Collection();
-		$c->fill($array);
-		return $c;
+	public function map(Closure $closure): array {
+		return array_map($closure, $this->asArray());
+	}
+	
+	public function filter(Closure $closure): array {
+		return array_filter($this->asArray(), $closure);
+	}
+	
+	#[Pure] public function keys(): array {
+		return array_keys($this->asArray());
 	}
 }
