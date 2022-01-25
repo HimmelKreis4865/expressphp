@@ -45,7 +45,7 @@ class Utils {
 		$queries = "";
 		if (str_contains($path, "?")) $queries = substr($path, strpos($path, "?") + 1);
 		if (empty($req)) return null; // no http version
-		return new Request(Collection::fromArray(self::decodeHeaders($headers)), new RequestData($address, strtoupper($method), urldecode($path), Collection::fromArray(self::remapQueries($queries))), implode(PHP_EOL, array_filter($bodyLines, function ($v): bool { return $v; })));
+		return new Request(new Collection(self::decodeHeaders($headers)), new RequestData($address, strtoupper($method), urldecode($path), new Collection(self::remapQueries($queries))), implode(PHP_EOL, array_filter($bodyLines, function ($v): bool { return $v; })));
 	}
 	
 	private static function decodeHeaders(array $headers): array {
