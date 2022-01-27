@@ -97,7 +97,7 @@ final class App {
 	
 	private function autoload(): void {
 		spl_autoload_register(function (string $class): void {
-			if (str_starts_with($class, "express")) require __DIR__ . substr($class, strlen("express")) . ".php";
+			if (str_starts_with($class, "express")) require __DIR__ . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, substr($class, strlen("express"))) . ".php";
 		});
 	}
 }
