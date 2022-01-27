@@ -7,7 +7,7 @@ use function explode;
 
 class InternetAddress {
 	
-	public const LOCALHOST = "127.0.0.1";
+	public const LOCALHOST = "0.0.0.0";
 	
 	public function __construct(protected string $address, protected int $port = 0) { }
 	
